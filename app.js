@@ -42,7 +42,6 @@ const db = low('.\\database\\config.json')
   app.get('/getBackgroundList', function (req, res) {
     res.set('Access-Control-Allow-Origin','*');
     fs.readdir('./uploads', (err, files) => {
-      console.log(err,files)
       res.send({err, url: BACKGROUNDURL, files});
     })
   });
@@ -52,7 +51,7 @@ const db = low('.\\database\\config.json')
 
 // -----------------------------------屏幕配置区域-----------------------------------
 {
-  // 处理获取背景图片列表请求
+  // 处理设置屏幕配置请求
   app.post('/setScreenConfig', function (req, res) {
     let body = '';
     res.set('Access-Control-Allow-Origin','*');
@@ -60,16 +59,24 @@ const db = low('.\\database\\config.json')
         body += chunk; //读取参数流转化为字符串
     });
     req.on('end', function () {
-      db.defaults({ test: {} }).write()
-      db.set('test', JSON.parse(body)).write()
-      res.send('ok');
+      console.log('收到写屏幕配置项请求!')
+      db.defaults({ screen: [] }).write()
+      db.get('screen').push(JSON.parse(body)).write()
+      res.send({err: null});
     })
   });
 
-  // 处理获取背景图片列表请求
+  // 处理获取屏幕配置请求
   app.get('/getScreenConfig', function (req, res) {
     res.set('Access-Control-Allow-Origin','*');
-    res.send(db.get('test').value());
+    res.send(db.get('screen').value()[0]);
+  });
+
+  // 处理获取屏幕配置请求
+  app.get('/getScreenNumber', function (req, res) {
+    res.set('Access-Control-Allow-Origin','*');
+    const length = db.get('screen').value().length
+    res.send({err: null, length: length});
   });
 }
 
