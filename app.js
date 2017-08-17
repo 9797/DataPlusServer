@@ -4,7 +4,8 @@ const express    = require("express"),
       fs         = require("fs"),
       low        = require('lowdb'),
       app        = express()
-      
+
+const BACKGROUNDURL = 'http://127.0.0.1:9999/background/'
 const db = low('.\\database\\config.json')
 
 
@@ -38,7 +39,7 @@ const db = low('.\\database\\config.json')
 // -----------------------------------背景图片区域-----------------------------------
 {
   // 处理获取背景图片列表请求
-  app.post('/getBackgroundList', function (req, res) {
+  app.get('/getBackgroundList', function (req, res) {
     res.set('Access-Control-Allow-Origin','*');
     fs.readdir('./uploads', (err, files) => {
       console.log(err,files)
@@ -66,7 +67,7 @@ const db = low('.\\database\\config.json')
   });
 
   // 处理获取背景图片列表请求
-  app.post('/getScreenConfig', function (req, res) {
+  app.get('/getScreenConfig', function (req, res) {
     res.set('Access-Control-Allow-Origin','*');
     res.send(db.get('test').value());
   });
