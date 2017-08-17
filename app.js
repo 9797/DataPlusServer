@@ -1,43 +1,15 @@
 "use strict";
 exports.__esModule = true;
-const express = require("express"),
-      fs      = require("fs"),
-      app     = express()
+const express    = require("express"),
+      fs         = require("fs"),
+      low        = require('lowdb'),
+      app        = express()
+      
+const db = low('.\\database\\config.json')
 
-let   DB      = null
 
-// 数据库初始化
-{
-  const DBFile  = `${process.cwd()}\\database\\config.db`, // 数据库位置
-        sqlite3 = require('sqlite3').verbose();
-
-  // 如果没有数据库文件则创建数据库文件
-  if(!fs.existsSync(DBFile)) {
-    console.log(`创建数据库文件:${DBFile}`);
-    fs.openSync(DBFile, "w");
-  }
-  DB = new sqlite3.Database(DBFile);
-}
-
-  
-DB.serialize(function() {
-  DB.run("CREATE TABLE lorem (info TEXT)");
-  
-  var stmt = DB.prepare("INSERT INTO lorem VALUES (?)");
-  for (var i = 0; i < 10; i++) {
-    stmt.run("Ipsum " + i);
-  }
-  stmt.finalize();
-  
-  DB.each("SELECT rowid AS id, info FROM lorem", function(err, row) {
-    console.log(row.id + ": " + row.info);
-  });
-});
-  
-DB.close();
-
-const BACKGROUNDURL = 'http://127.0.0.1:9999/background/'
-{ // 图片上传区域
+// -----------------------------------图片上传区域-----------------------------------
+{ 
   const multer  = require("multer")
   const storage = multer.diskStorage({
     destination: function(req, file, cb) { // 存放目录配置
@@ -63,7 +35,9 @@ const BACKGROUNDURL = 'http://127.0.0.1:9999/background/'
   })
 }
 
+// -----------------------------------背景图片区域-----------------------------------
 {
+  // 处理获取背景图片列表请求
   app.post('/getBackgroundList', function (req, res) {
     res.set('Access-Control-Allow-Origin','*');
     fs.readdir('./uploads', (err, files) => {
@@ -71,11 +45,32 @@ const BACKGROUNDURL = 'http://127.0.0.1:9999/background/'
       res.send({err, url: BACKGROUNDURL, files});
     })
   });
+  // 处理获取背景图片请求
+  app.use('/background', express.static('uploads'));
 }
 
-// 处理获取背景图片请求
-app.use('/background', express.static('uploads'));
+// -----------------------------------屏幕配置区域-----------------------------------
+{
+  // 处理获取背景图片列表请求
+  app.post('/setScreenConfig', function (req, res) {
+    let body = '';
+    res.set('Access-Control-Allow-Origin','*');
+    req.on('data', function (chunk) {
+        body += chunk; //读取参数流转化为字符串
+    });
+    req.on('end', function () {
+      db.defaults({ test: {} }).write()
+      db.set('test', JSON.parse(body)).write()
+      res.send('ok');
+    })
+  });
 
+  // 处理获取背景图片列表请求
+  app.post('/getScreenConfig', function (req, res) {
+    res.set('Access-Control-Allow-Origin','*');
+    res.send(db.get('test').value());
+  });
+}
 
 // 服务器实例
 const server = app.listen(9999, 'localhost', function() {
