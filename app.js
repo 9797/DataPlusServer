@@ -4,6 +4,38 @@ const express = require("express"),
       fs      = require("fs"),
       app     = express()
 
+let   DB      = null
+
+// 数据库初始化
+{
+  const DBFile  = `${process.cwd()}\\database\\config.db`, // 数据库位置
+        sqlite3 = require('sqlite3').verbose();
+
+  // 如果没有数据库文件则创建数据库文件
+  if(!fs.existsSync(DBFile)) {
+    console.log(`创建数据库文件:${DBFile}`);
+    fs.openSync(DBFile, "w");
+  }
+  DB = new sqlite3.Database(DBFile);
+}
+
+  
+DB.serialize(function() {
+  DB.run("CREATE TABLE lorem (info TEXT)");
+  
+  var stmt = DB.prepare("INSERT INTO lorem VALUES (?)");
+  for (var i = 0; i < 10; i++) {
+    stmt.run("Ipsum " + i);
+  }
+  stmt.finalize();
+  
+  DB.each("SELECT rowid AS id, info FROM lorem", function(err, row) {
+    console.log(row.id + ": " + row.info);
+  });
+});
+  
+DB.close();
+
 const BACKGROUNDURL = 'http://127.0.0.1:9999/background/'
 { // 图片上传区域
   const multer  = require("multer")
