@@ -67,9 +67,23 @@ const db = low('.\\database\\config.json')
   });
 
   // 处理获取屏幕配置请求
-  app.get('/getScreenConfig', function (req, res) {
+  app.post('/getScreenConfig', function (req, res) {
+    let body = '';
     res.set('Access-Control-Allow-Origin','*');
-    res.send(db.get('screen').value()[0]);
+    req.on('data', function (chunk) {
+        body += chunk; //读取参数流转化为字符串
+    });
+    req.on('end', function () {
+      const key = JSON.parse(body).key
+      const screenConfig = db.get('screen').value()
+      const data = {
+        err: null,
+        data: screenConfig[key - 1]
+      }
+      console.log(`[getScreenConfig]返回数据:`)
+      console.log(data)
+      res.send(JSON.stringify(data));
+    })
   });
 
   // 处理获取屏幕配置请求
