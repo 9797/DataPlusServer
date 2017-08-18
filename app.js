@@ -95,6 +95,6 @@ const db = low('.\\database\\config.json')
 }
 
 // 服务器实例
-const server = app.listen(9999, 'localhost', function() {
+const server = app.listen(9999, function() {
   console.log('服务正在监听9999端口!');
 });
