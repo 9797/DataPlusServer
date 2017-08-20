@@ -31,7 +31,11 @@ const db = low('.\\database\\config.json')
     } else {
       console.log('文件上传成功:')
       console.log(files);
-      res.send(BACKGROUNDURL + files[0].filename);
+      const data = {
+        err: null,
+        fileName: BACKGROUNDURL + files[0].filename
+      }
+      res.send(data);
     }
   })
 }
