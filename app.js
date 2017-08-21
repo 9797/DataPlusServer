@@ -81,7 +81,7 @@ const db = low('.\\database\\config.json')
         name: '新建屏幕',
         data: JSON.parse(body)
       }
-      console.log(chalk.gray('[getScreenConfig]设置数据:'))
+      console.log(chalk.gray('[setScreenConfig]设置数据:'))
       console.log(data)
       db.defaults({ screen: {} }).write()
       db.set(`screen.${id}`, data).write()
@@ -97,11 +97,11 @@ const db = low('.\\database\\config.json')
         body += chunk; //读取参数流转化为字符串
     });
     req.on('end', function () {
-      const key = JSON.parse(body).key
-      const screenConfig = db.get('screen').value()
+      const id = JSON.parse(body).id
+      const screenConfig = db.get(`screen[${id}]`).value()
       const data = {
         err: null,
-        data: screenConfig[key - 1]
+        config: screenConfig
       }
       console.log(chalk.gray('[getScreenConfig]返回数据:'))
       console.log(data.data)
